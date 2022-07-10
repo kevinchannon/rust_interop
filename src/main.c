@@ -8,6 +8,9 @@ int main() {
   char s[100];
   int len = get_string(s, 100);
   printf("get_string(): %s, len=%d\n", s, len);
+  
+  len = get_string(s, 10);
+  printf("get_string(): %s, len=%d\n", s, len);
 
   return 0;
 }
