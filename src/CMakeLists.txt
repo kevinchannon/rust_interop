@@ -10,4 +10,6 @@ set_target_properties(librust_interop PROPERTIES IMPORTED_LOCATION ~/repos/rust_
 
 target_link_libraries( ${PROJECT_NAME}
     librust_interop
+    pthread
+    dl
 )
