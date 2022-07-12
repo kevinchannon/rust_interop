@@ -5,8 +5,8 @@ use std::{cmp, ptr};
 pub extern "C" fn get_int() -> i32 { 2 }
 
 #[no_mangle]
-pub extern "C" fn get_string(buf: *mut u8, max_len: size_t) -> c_int {
-  let out_bytes = "I'm a little teapot".as_bytes();
+pub extern "C" fn fill_string(buf: *mut u8, max_len: size_t) -> c_int {
+  let out_bytes = get_string().as_bytes();
   let out_size = cmp::min(max_len as usize, out_bytes.len());
   let terminator_idx = (out_size - 1) as isize;
         
@@ -21,5 +21,9 @@ pub extern "C" fn get_string(buf: *mut u8, max_len: size_t) -> c_int {
     }
     
   out_size as c_int
+}
+
+fn get_string() -> &'static str {
+  "I'm a little teapot"
 }
 
