@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+///////////////////////////////////////////////////////////////////////////////
+
 void print_user(bool success, User* user) {
   if (success) {
     printf("Found user with ID %lu\n", user->id);
@@ -13,6 +15,8 @@ void print_user(bool success, User* user) {
   }
 
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 int main() {
   printf("get_int(): %d\n", get_int());
@@ -30,4 +34,6 @@ int main() {
   
   return 0;
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
