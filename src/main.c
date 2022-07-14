@@ -6,17 +6,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void print_user(bool success, User* user) {
-  if (success) {
-    printf("Found user with ID %lu\n", user->id);
-  } else {
-    printf("ERROR: Failed to find user\n");
-  }
-
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 int main() {
   printf("get_int(): %d\n", get_int());
   
@@ -27,12 +16,20 @@ int main() {
   len = fill_string(s, 10);
   printf("fill_string(): %s, len=%d\n", s, len);
 
-  User user;
-  print_user(get_user(1, &user), &user);
-  print_user(get_user(100, &user), &user);
-  
   UserHandle user_handle = add_user(1234);
   printf("Added user with handle: %lu\n", user_handle);
+  
+  ResultCode rc = set_user_name(user_handle, "Uluru", 6);
+  if ( RC_ERROR == rc) {
+    printf("Failed to set user's name\n");
+  }
+  
+  rc = get_user_name(user_handle, s, 100);
+  if ( RC_ERROR == rc) {
+    printf("Failed to set user's name\n");
+  } else {
+    printf("User's name set to %s\n", s);
+  }
   
   return 0;
 }

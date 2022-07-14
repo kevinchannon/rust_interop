@@ -10,10 +10,10 @@ pub mod detail;
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#[repr(C)]
-pub struct User {
-  id: u64,
-}
+type ResultCode = u64;
+
+pub const RC_OK: ResultCode = 0;
+pub const RC_ERROR: ResultCode = 1;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -30,13 +30,17 @@ pub unsafe extern "C" fn add_user(id: u64) -> UserHandle {
 ///////////////////////////////////////////////////////////////////////////////
 
 #[no_mangle]
-pub extern "C" fn get_user(id: u64, user: *mut User) -> bool{
-  if id >= 100 {
-    return false;
-  }
-  
-  unsafe { (*user).id = id; }
-  return true;
+pub unsafe extern "C" fn set_user_name(_h: UserHandle, _name_buffer: *const u8, _name_len: size_t) -> ResultCode {
+  0
+  //detail::set_user_name(h, name)
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+#[no_mangle]
+pub unsafe extern "C" fn get_user_name(_h: UserHandle, _buf: *mut u8, _max_len: size_t) -> ResultCode {
+  0
+  //detail::set_user_name(h, name)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
