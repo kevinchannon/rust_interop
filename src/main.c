@@ -10,8 +10,7 @@ void print_user(bool success, User* user) {
   if (success) {
     printf("Found user with ID %lu\n", user->id);
   } else {
-    printf("FATAL: Failed to find user\n");
-    exit(1);
+    printf("ERROR: Failed to find user\n");
   }
 
 }
@@ -31,6 +30,9 @@ int main() {
   User user;
   print_user(get_user(1, &user), &user);
   print_user(get_user(100, &user), &user);
+  
+  UserHandle user_handle = add_user(1234);
+  printf("Added user with handle: %lu\n", user_handle);
   
   return 0;
 }
