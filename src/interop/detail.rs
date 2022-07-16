@@ -1,4 +1,6 @@
 use std::ops::{Deref, DerefMut};
+use libc::c_char;
+use std::ffi::CStr;
 
 use super::*;
 
@@ -46,13 +48,45 @@ pub unsafe fn create_user(id: UserId) -> UserHandle {
 
 pub unsafe fn set_user_name(h: UserHandle, name: &str) -> ResultCode {
   match USERS.iter().position(|u| u.id == h){
-    Some(pos) => { USERS[pos].name = name.to_string(); return RC_OK; },
+    Some(pos) => {
+      USERS[pos].name = name.to_string();
+      return RC_OK;
+      },
     None => {return RC_ERROR;}
   }
 }
 
-pub unsafe fn get_user_name(_h: UserHandle) -> &'static str {
-  "wibble"
+pub unsafe fn get_user_name(h: UserHandle) -> &'static str {
+  match USERS.iter().position(|u| u.id == h){
+    Some(pos) => &*USERS[pos].name,
+    None => ""
+  }
+}
+
+pub fn str_from_null_term_chars(null_term_chars: *const c_char) -> &'static str {
+  let c_str = unsafe {
+    assert!(!null_term_chars.is_null());
+    CStr::from_ptr(null_term_chars)
+  };
+  
+  c_str.to_str().unwrap()
+}
+
+pub fn null_term_chars_from_str(s: &str, buf: *mut c_char, max_len: size_t) -> ResultCode {
+  let out_bytes = s.as_bytes();
+  let out_size = cmp::min(max_len as usize, out_bytes.len() + 1);
+  let terminator_idx = (out_size - 1) as isize;
+        
+  unsafe {
+        for i in 0..terminator_idx as isize {
+            ptr::write(buf.offset(i), out_bytes[i as usize] as i8);
+        }
+        
+        // Write the null terminator
+        ptr::write(buf.offset(terminator_idx), '\0' as i8);
+    }
+    
+  return RC_OK;
 }
 
 #[cfg(test)]
@@ -67,17 +101,12 @@ mod tests {
     }
     
     #[test]
-    fn set_user_name_with_valid_name_return_success(){
+    fn set_and_get_user_name_with_valid_handle_returns_name(){
       unsafe {
         assert_eq!(RC_OK, set_user_name(123, "human 1"));
-      }
-    }
-    
-    #[test]
-    fn get_user_name_with_valid_handle_returns_name(){
-      unsafe {
         assert_eq!("human 1", get_user_name(123));
       }
     }
+    
 }
 

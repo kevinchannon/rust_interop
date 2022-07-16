@@ -1,5 +1,6 @@
-use libc::{size_t, c_int};
+use libc::{size_t, c_int, c_char};
 use std::{cmp, ptr};
+
 
 pub mod detail;
 
@@ -30,17 +31,15 @@ pub unsafe extern "C" fn add_user(id: u64) -> UserHandle {
 ///////////////////////////////////////////////////////////////////////////////
 
 #[no_mangle]
-pub unsafe extern "C" fn set_user_name(_h: UserHandle, _name_buffer: *const u8, _name_len: size_t) -> ResultCode {
-  0
-  //detail::set_user_name(h, name)
+pub unsafe extern "C" fn set_user_name(h: UserHandle, name_as_null_term_chars: *const c_char) -> ResultCode {
+  detail::set_user_name(h, detail::str_from_null_term_chars(name_as_null_term_chars))
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 #[no_mangle]
-pub unsafe extern "C" fn get_user_name(_h: UserHandle, _buf: *mut u8, _max_len: size_t) -> ResultCode {
-  0
-  //detail::set_user_name(h, name)
+pub unsafe extern "C" fn get_user_name(h: UserHandle, buf: *mut c_char, max_len: size_t) -> ResultCode {
+  detail::null_term_chars_from_str(detail::get_user_name(h), buf, max_len)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
