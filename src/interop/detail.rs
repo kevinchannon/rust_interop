@@ -1,6 +1,8 @@
 use std::ops::{Deref, DerefMut};
 use libc::c_char;
 use std::ffi::CStr;
+use std::sync::{Mutex, Once};
+use std::borrow::BorrowMut;
 
 use super::*;
 
@@ -66,25 +68,42 @@ impl DerefMut for UserList {
   fn deref_mut(&mut self) -> &mut Self::Target { &mut self.users}
 }
 
-static mut USERS: UserList = UserList{users: Vec::<User>::new()};
 
-pub unsafe fn create_user(id: UserId) -> UserHandle {
-  USERS.create_user(id)
+static mut STD_ONCE_COUNTER: Option<Mutex<UserList>> = None;
+static INIT: Once = Once::new();
+
+fn user_list<'a>() -> &'a Mutex<UserList> {
+    INIT.call_once(|| {
+        // Since this access is inside a call_once, it is safe
+        unsafe {
+            *STD_ONCE_COUNTER.borrow_mut() = Some(Mutex::new(UserList{users: Vec::<User>::new()}));
+        }
+    });
+    // As long as this function is the only place with access to the static variable,
+    // giving out read-only borrow here is safe because it is guaranteed no more mutable
+    // references will exist at this point or in the future.
+    unsafe { STD_ONCE_COUNTER.as_ref().unwrap() }
 }
 
-pub unsafe fn set_user_name(h: UserHandle, name: &str) -> ResultCode {
-  match USERS.iter().position(|u| u.id == h){
+// static mut USERS: UserList = UserList{users: Vec::<User>::new()};
+
+pub fn create_user(id: UserId) -> UserHandle {
+  (*user_list().lock().unwrap()).create_user(id)
+}
+
+pub fn set_user_name(h: UserHandle, name: &str) -> ResultCode {
+  match (*user_list().lock().unwrap()).iter().position(|u| u.id == h){
     Some(pos) => {
-      USERS[pos].name = name.to_string();
+      (*user_list().lock().unwrap())[pos].name = name.to_string();
       return RC_OK;
       },
     None => {return RC_ERROR;}
   }
 }
 
-pub unsafe fn get_user_name(h: UserHandle) -> &'static str {
-  match USERS.iter().position(|u| u.id == h){
-    Some(pos) => &*USERS[pos].name,
+pub fn get_user_name(h: UserHandle) -> &'static str {
+  match (*user_list().lock().unwrap()).iter().position(|u| u.id == h){
+    Some(pos) => &(*user_list().lock().unwrap()[pos].name)[..],
     None => ""
   }
 }
