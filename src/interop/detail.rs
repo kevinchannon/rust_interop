@@ -4,9 +4,35 @@ use std::ffi::CStr;
 
 use super::*;
 
-pub fn get_string() -> &'static str {
-  "I'm a little teapot"
+///////////////////////////////////////////////////////////////////////////////
+
+pub fn str_from_null_term_chars(null_term_chars: *const c_char) -> &'static str {
+  let c_str = unsafe {
+    assert!(!null_term_chars.is_null());
+    CStr::from_ptr(null_term_chars)
+  };
+  
+  c_str.to_str().unwrap()
 }
+
+pub fn null_term_chars_from_str(s: &str, buf: *mut c_char, max_len: size_t) -> ResultCode {
+  let out_bytes = s.as_bytes();
+  let out_size = cmp::min(max_len as usize, out_bytes.len() + 1);
+  let terminator_idx = (out_size - 1) as isize;
+        
+  unsafe {
+        for i in 0..terminator_idx as isize {
+            ptr::write(buf.offset(i), out_bytes[i as usize] as i8);
+        }
+        
+        // Write the null terminator
+        ptr::write(buf.offset(terminator_idx), '\0' as i8);
+    }
+    
+  return RC_OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 pub struct User {
   id: u64,
@@ -63,50 +89,27 @@ pub unsafe fn get_user_name(h: UserHandle) -> &'static str {
   }
 }
 
-pub fn str_from_null_term_chars(null_term_chars: *const c_char) -> &'static str {
-  let c_str = unsafe {
-    assert!(!null_term_chars.is_null());
-    CStr::from_ptr(null_term_chars)
-  };
-  
-  c_str.to_str().unwrap()
-}
-
-pub fn null_term_chars_from_str(s: &str, buf: *mut c_char, max_len: size_t) -> ResultCode {
-  let out_bytes = s.as_bytes();
-  let out_size = cmp::min(max_len as usize, out_bytes.len() + 1);
-  let terminator_idx = (out_size - 1) as isize;
-        
-  unsafe {
-        for i in 0..terminator_idx as isize {
-            ptr::write(buf.offset(i), out_bytes[i as usize] as i8);
-        }
-        
-        // Write the null terminator
-        ptr::write(buf.offset(terminator_idx), '\0' as i8);
-    }
-    
-  return RC_OK;
-}
+///////////////////////////////////////////////////////////////////////////////
 
 #[cfg(test)]
 mod tests {
   use super::*;
   
-    #[test]
-    fn add_a_user_returns_id_as_handle_handle() {  
-      unsafe {
-       assert_eq!(123, create_user(123));
-       }
+  #[test]
+  fn add_a_user_returns_id_as_handle_handle() {  
+    unsafe {
+     assert_eq!(123, create_user(123));
+     }
+  }
+  
+  #[test]
+  fn set_and_get_user_name_with_valid_handle_returns_name(){
+    unsafe {
+      assert_eq!(RC_OK, set_user_name(123, "human 1"));
+      assert_eq!("human 1", get_user_name(123));
     }
-    
-    #[test]
-    fn set_and_get_user_name_with_valid_handle_returns_name(){
-      unsafe {
-        assert_eq!(RC_OK, set_user_name(123, "human 1"));
-        assert_eq!("human 1", get_user_name(123));
-      }
-    }
-    
+  } 
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
