@@ -8,7 +8,7 @@
 
 int main() {
   UserHandle user_handle = add_user(1234);
-  printf("Added user with handle: %lu\n", user_handle);
+  printf("Added user with handle: %llu\n", user_handle);
   
   ResultCode rc = set_user_name(user_handle, "Uluru");
   if ( RC_ERROR == rc) {
