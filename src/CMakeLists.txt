@@ -6,7 +6,7 @@ add_executable( ${PROJECT_NAME}
 )
 
 add_library(librust_interop STATIC IMPORTED)
-set_target_properties(librust_interop PROPERTIES IMPORTED_LOCATION ~/repos/rust_interop/target/debug/librust_interop.a)
+set_target_properties(librust_interop PROPERTIES IMPORTED_LOCATION ../../../target/debug/librust_interop.a)
 
 target_link_libraries( ${PROJECT_NAME}
     librust_interop
